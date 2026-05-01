@@ -1,1 +1,174 @@
 # Password-Generator
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{background:#0f172a;border-radius:var(--border-radius-xl);padding:28px 24px;max-width:480px;margin:0 auto;border:0.5px solid #1e293b}
+.title{color:#f8fafc;font-size:22px;font-weight:500;text-align:center;margin-bottom:4px}
+.subtitle{color:#64748b;font-size:13px;text-align:center;margin-bottom:24px}
+.section{margin-bottom:20px}
+.label{color:#94a3b8;font-size:12px;font-weight:500;letter-spacing:.05em;margin-bottom:8px;text-transform:uppercase}
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-row input[type=range]{flex:1;accent-color:#22d3ee;height:4px}
+.len-val{color:#22d3ee;font-size:16px;font-weight:500;min-width:28px;text-align:right}
+.toggles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toggle{display:flex;align-items:center;gap:10px;background:#1e293b;border:0.5px solid #334155;border-radius:10px;padding:10px 14px;cursor:pointer;transition:border-color .15s}
+.toggle:hover{border-color:#22d3ee}
+.toggle input{accent-color:#22d3ee;width:15px;height:15px;cursor:pointer}
+.toggle span{color:#cbd5e1;font-size:14px}
+.presets{display:flex;gap:8px;flex-wrap:wrap}
+.preset{background:#1e293b;border:0.5px solid #334155;border-radius:8px;padding:7px 12px;color:#94a3b8;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.preset:hover{border-color:#22d3ee;color:#22d3ee}
+.gen-btn{width:100%;padding:14px;background:linear-gradient(135deg,#0ea5e9,#22d3ee);border:none;border-radius:12px;color:#0f172a;font-size:16px;font-weight:500;cursor:pointer;transition:opacity .15s;margin-bottom:16px}
+.gen-btn:hover{opacity:.9}
+.output-row{display:flex;gap:8px;align-items:stretch}
+.output{flex:1;background:#1e293b;border:0.5px solid #334155;border-radius:10px;padding:12px 16px;color:#22d3ee;font-family:var(--font-mono);font-size:15px;word-break:break-all;min-height:48px;display:flex;align-items:center}
+.copy-btn{background:#1e293b;border:0.5px solid #334155;border-radius:10px;padding:12px 16px;color:#94a3b8;font-size:13px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.copy-btn:hover{border-color:#22d3ee;color:#22d3ee}
+.strength-bar-wrap{height:6px;background:#1e293b;border-radius:99px;overflow:hidden;margin-bottom:6px}
+.strength-bar{height:100%;border-radius:99px;transition:width .3s,background .3s;width:0%}
+.strength-label{font-size:12px;color:#64748b}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#22d3ee;color:#0f172a;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:opacity .25s;pointer-events:none;z-index:99}
+.toast.show{opacity:1}
+.tips{background:#1e293b;border:0.5px solid #334155;border-radius:10px;padding:14px 16px;margin-top:4px}
+.tips-title{color:#94a3b8;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.tip{color:#64748b;font-size:12px;padding:3px 0;display:flex;gap:8px}
+.tip::before{content:"•";color:#22d3ee;flex-shrink:0}
+.aff{background:#0f172a;border:0.5px solid #1e3a5f;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+.aff-icon{width:32px;height:32px;background:#1e293b;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.aff-text{color:#94a3b8;font-size:12px;line-height:1.5}
+.aff-link{color:#22d3ee;font-size:12px;text-decoration:none}
+.aff-link:hover{text-decoration:underline}
+</style>
+
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Secure Password Generator — create strong passwords with customizable options</h2>
+
+<div class="wrap">
+  <div class="title">Generate Secure Passwords</div>
+  <div class="subtitle">Create strong, random passwords instantly</div>
+
+  <div class="section">
+    <div class="label">Password Length</div>
+    <div class="slider-row">
+      <input type="range" id="lenSlider" min="6" max="64" value="16" step="1" oninput="onLen(this.value)">
+      <span class="len-val" id="lenVal">16</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Character Types</div>
+    <div class="toggles">
+      <label class="toggle"><input type="checkbox" id="upper" checked><span>Uppercase A–Z</span></label>
+      <label class="toggle"><input type="checkbox" id="lower" checked><span>Lowercase a–z</span></label>
+      <label class="toggle"><input type="checkbox" id="nums" checked><span>Numbers 0–9</span></label>
+      <label class="toggle"><input type="checkbox" id="syms" checked><span>Symbols !@#$</span></label>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Presets</div>
+    <div class="presets">
+      <button class="preset" onclick="applyPreset('banking')">Banking</button>
+      <button class="preset" onclick="applyPreset('social')">Social Media</button>
+      <button class="preset" onclick="applyPreset('super')">Super Secure</button>
+      <button class="preset" onclick="applyPreset('pin')">PIN Code</button>
+    </div>
+  </div>
+
+  <button class="gen-btn" onclick="generate()">Generate Password</button>
+
+  <div class="section">
+    <div class="output-row">
+      <div class="output" id="output">Click generate to start</div>
+      <button class="copy-btn" id="copyBtn" onclick="copyPw()">Copy</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Strength</div>
+    <div class="strength-bar-wrap"><div class="strength-bar" id="sBar"></div></div>
+    <div class="strength-label" id="sLabel">—</div>
+  </div>
+
+  <div class="tips">
+    <div class="tips-title">Security Tips</div>
+    <div class="tip">Use a unique password for every account</div>
+    <div class="tip">Never reuse passwords across sites</div>
+    <div class="tip">16+ characters with symbols = very hard to crack</div>
+    <div class="tip">Store passwords in a password manager</div>
+  </div>
+
+  <div class="aff" style="margin-top:14px">
+    <div class="aff-icon">🔒</div>
+    <div>
+      <div class="aff-text">Don't just generate — store passwords safely.</div>
+      <a class="aff-link" href="https://bitwarden.com" target="_blank">Try Bitwarden (free) →</a>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied!</div>
+
+<script>
+var currentPw = "";
+
+function onLen(v){document.getElementById("lenVal").textContent=v;if(currentPw)generate()}
+
+function applyPreset(p){
+  var sl=document.getElementById("lenSlider");
+  var u=document.getElementById("upper"),l=document.getElementById("lower"),n=document.getElementById("nums"),s=document.getElementById("syms");
+  if(p==="banking"){sl.value=20;u.checked=true;l.checked=true;n.checked=true;s.checked=true}
+  else if(p==="social"){sl.value=14;u.checked=true;l.checked=true;n.checked=true;s.checked=false}
+  else if(p==="super"){sl.value=32;u.checked=true;l.checked=true;n.checked=true;s.checked=true}
+  else if(p==="pin"){sl.value=6;u.checked=false;l.checked=false;n.checked=true;s.checked=false}
+  document.getElementById("lenVal").textContent=sl.value;
+  generate();
+}
+
+function generate(){
+  var chars="";
+  if(document.getElementById("upper").checked)chars+="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  if(document.getElementById("lower").checked)chars+="abcdefghijklmnopqrstuvwxyz";
+  if(document.getElementById("nums").checked)chars+="0123456789";
+  if(document.getElementById("syms").checked)chars+="!@#$%^&*()_+-=[]{}|;:,.<>?";
+  if(!chars){document.getElementById("output").textContent="Select at least one type";return}
+  var len=parseInt(document.getElementById("lenSlider").value);
+  var arr=new Uint32Array(len);
+  crypto.getRandomValues(arr);
+  var pw="";
+  for(var i=0;i<len;i++)pw+=chars[arr[i]%chars.length];
+  currentPw=pw;
+  document.getElementById("output").textContent=pw;
+  updateStrength(pw);
+}
+
+function updateStrength(pw){
+  var score=0;
+  if(pw.length>=8)score++;
+  if(pw.length>=16)score++;
+  if(pw.length>=24)score++;
+  if(/[A-Z]/.test(pw)&&/[a-z]/.test(pw))score++;
+  if(/[0-9]/.test(pw))score++;
+  if(/[^A-Za-z0-9]/.test(pw))score++;
+  var pct=Math.round((score/6)*100);
+  var bar=document.getElementById("sBar");
+  var lbl=document.getElementById("sLabel");
+  var col,txt;
+  if(score<=2){col="#ef4444";txt="Weak"}
+  else if(score<=4){col="#f59e0b";txt="Medium"}
+  else{col="#22c55e";txt="Strong"}
+  bar.style.width=pct+"%";
+  bar.style.background=col;
+  lbl.textContent=txt+" ("+pct+"%)";
+  lbl.style.color=col;
+}
+
+function copyPw(){
+  if(!currentPw)return;
+  navigator.clipboard.writeText(currentPw).then(function(){
+    var t=document.getElementById("toast");
+    t.classList.add("show");
+    setTimeout(function(){t.classList.remove("show")},1800);
+  });
+}
+</script>
